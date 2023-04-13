@@ -11,6 +11,7 @@ class Track:
     artist: str
     title: str
     recommendations: List[int] = field(default=lambda: [])
+    time_weight: List[float] = field(default=lambda: [])
 
 
 class Catalog:
@@ -37,9 +38,10 @@ class Catalog:
                         data["artist"],
                         data["title"],
                         data.get("recommendations", []),
+                        data.get("time_weight", []),
                     )
                 )
-        self.app.logger.info(f"Loaded {j+1} tracks")
+        self.app.logger.info(f"Loaded {j + 1} tracks")
 
         self.app.logger.info(f"Loading top tracks from {top_tracks_path}")
         with open(top_tracks_path) as top_tracks_path_file:
@@ -57,6 +59,7 @@ class Catalog:
                         data["artist"],
                         data["title"],
                         data.get("recommendations", []),
+                        data.get("time_weight", []),
                     )
                 )
 
@@ -81,7 +84,7 @@ class Catalog:
         self.app.logger.info(f"Uploading artists to redis")
         sorted_tracks = sorted(self.tracks, key=lambda track: track.artist)
         for j, (artist, artist_catalog) in enumerate(
-            itertools.groupby(sorted_tracks, key=lambda track: track.artist)
+                itertools.groupby(sorted_tracks, key=lambda track: track.artist)
         ):
             artist_tracks = [t.track for t in artist_catalog]
             redis.set(artist, self.to_bytes(artist_tracks))
